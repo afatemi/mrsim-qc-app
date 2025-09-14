@@ -1,1 +1,1 @@
-web: python3 mrsim_qc_app.py
+web: gunicorn --bind 0.0.0.0:$PORT mrsim_qc_app:app

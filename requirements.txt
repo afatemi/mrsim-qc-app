@@ -17,3 +17,10 @@ scipy>=1.7.0  # Already included above, but explicitly for sparse operations
 
 # For advanced interpolation (if needed)
 scipy>=1.7.0  # Already included above, but explicitly for interpolation
+
+# Web framework
+flask>=2.0.0
+gunicorn>=20.1.0
+
+# 3D visualization
+plotly>=5.0.0
