@@ -24,13 +24,24 @@ from datetime import datetime
 import json
 
 # Import our b0map utilities
-from mri_utils import (
-    estimate_b0_fieldmap,
-    assess_fieldmap_quality,
-    smooth_fieldmap,
-    correct_geometric_distortion,
-    assess_distortion_severity
-)
+import traceback
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+try:
+    from mri_utils import (
+        estimate_b0_fieldmap,
+        assess_fieldmap_quality,
+        smooth_fieldmap,
+        correct_geometric_distortion,
+        assess_distortion_severity
+    )
+except ImportError as e:
+    logger.error(f"Import error: {e}")
+    logger.error("Make sure all dependencies are installed")
 
 app = Flask(__name__)
 app.secret_key = 'mrsim_qc_secret_key_2024'
@@ -377,12 +388,34 @@ def create_3d_visualization(fieldmap_hz, distortion_mm, metadata, results_dir):
 @app.route('/')
 def index():
     """Main page - original beautiful design."""
-    return render_template('index.html')
+    try:
+        return render_template('index.html')
+    except Exception as e:
+        logger.error(f"Error in index route: {e}")
+        logger.error(traceback.format_exc())
+        return f"Error loading page: {str(e)}", 500
 
 @app.route('/test')
 def test():
     """Simple test page."""
-    return send_file('simple_test.html')
+    try:
+        return send_file('simple_test.html')
+    except Exception as e:
+        logger.error(f"Error in test route: {e}")
+        return f"Test page error: {str(e)}", 500
+
+@app.route('/health')
+def health():
+    """Health check endpoint."""
+    try:
+        return jsonify({
+            "status": "healthy",
+            "message": "MRsim QC app is running",
+            "timestamp": datetime.now().isoformat()
+        })
+    except Exception as e:
+        logger.error(f"Health check error: {e}")
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 @app.route('/simple')
 def simple():
@@ -624,4 +657,5 @@ def interactive_3d(session_id):
 if __name__ == '__main__':
     import os
     port = int(os.environ.get('PORT', 5001))
-    app.run(host='0.0.0.0', port=port, debug=False)
+    debug_mode = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
+    app.run(host='0.0.0.0', port=port, debug=debug_mode)
