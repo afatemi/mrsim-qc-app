@@ -1,0 +1,331 @@
+{% extends "base.html" %}
+
+{% block title %}Analysis Results - MRsim QC{% endblock %}
+
+{% block content %}
+<!-- Results Header -->
+<section class="hero-section" style="padding: 2rem 0;">
+    <div class="container text-center">
+        <h1 class="display-5 mb-3">
+            <i class="fas fa-chart-line me-3"></i>Analysis Results
+        </h1>
+        <p class="lead mb-0">Comprehensive MRI Distortion Analysis Complete</p>
+    </div>
+</section>
+
+<!-- Main Results Section -->
+<section class="py-5">
+    <div class="container">
+        <!-- Quick Stats Cards -->
+        <div class="row g-4 mb-5">
+            <div class="col-md-3">
+                <div class="card results-card text-center">
+                    <div class="card-body">
+                        <i class="fas fa-ruler-combined fa-2x text-primary mb-3"></i>
+                        <h4 class="stat-value">{{ "%.2f"|format(stats.distortion_max) }}</h4>
+                        <p class="card-text">Max Distortion (mm)</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="card results-card text-center">
+                    <div class="card-body">
+                        <i class="fas fa-chart-bar fa-2x text-success mb-3"></i>
+                        <h4 class="stat-value">{{ "%.2f"|format(stats.distortion_mean) }}</h4>
+                        <p class="card-text">Mean Distortion (mm)</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="card results-card text-center">
+                    <div class="card-body">
+                        <i class="fas fa-percentage fa-2x text-warning mb-3"></i>
+                        <h4 class="stat-value">{{ "%.1f"|format(stats.percentiles['95']) }}</h4>
+                        <p class="card-text">95th Percentile (mm)</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="card results-card text-center">
+                    <div class="card-body">
+                        <i class="fas fa-exclamation-triangle fa-2x text-danger mb-3"></i>
+                        <h4 class="stat-value">{{ "%.1f"|format(stats.severity_percentages.severe) }}</h4>
+                        <p class="card-text">Severe Distortion (%)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analysis Images -->
+        <div class="row g-4 mb-5">
+            <div class="col-12">
+                <div class="card results-card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-images me-2"></i>2D Analysis Results
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <img src="{{ url_for('static', filename='analysis_results.png') if False else '/web_results/' + session_id + '/analysis_results.png' }}" 
+                             class="img-fluid" alt="Analysis Results" 
+                             onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNTAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iI2Y4ZjlmYSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM2Yzc1N2QiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5BbmFseXNpcyBSZXN1bHRzPC90ZXh0Pjwvc3ZnPg=='">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Interactive 3D Visualization -->
+        <div class="row g-4 mb-5">
+            <div class="col-12">
+                <div class="card results-card">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-cube me-2"></i>Interactive 3D Distortion Analysis
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="text-center mb-3">
+                            <p class="lead">Explore your distortion data in 3D with full interactivity</p>
+                            <p class="text-muted">
+                                <small>Drag to rotate • Scroll to zoom • Hover for details</small>
+                            </p>
+                        </div>
+                        
+                        <!-- Embedded 3D visualization -->
+                        <div class="text-center">
+                            <iframe src="/interactive_3d/{{ session_id }}" 
+                                    width="100%" 
+                                    height="600" 
+                                    frameborder="0"
+                                    style="border: 1px solid #ddd; border-radius: 8px;">
+                                <p>Your browser does not support iframes. <a href="/interactive_3d/{{ session_id }}" target="_blank">Click here to open the 3D visualization</a></p>
+                            </iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Statistics -->
+        <div class="row g-4 mb-5">
+            <div class="col-lg-6">
+                <div class="card results-card">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-chart-line me-2"></i>Distortion Statistics
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <strong>Range:</strong> {{ "%.2f"|format(stats.distortion_range.0) }} to {{ "%.2f"|format(stats.distortion_range.1) }} mm
+                            </div>
+                            <div class="col-6">
+                                <strong>Mean:</strong> {{ "%.2f"|format(stats.distortion_mean) }} mm
+                            </div>
+                            <div class="col-6">
+                                <strong>Std Dev:</strong> {{ "%.2f"|format(stats.distortion_std) }} mm
+                            </div>
+                            <div class="col-6">
+                                <strong>Max:</strong> {{ "%.2f"|format(stats.distortion_max) }} mm
+                            </div>
+                        </div>
+                        
+                        <hr>
+                        
+                        <h6>Percentile Analysis:</h6>
+                        <div class="row g-2">
+                            <div class="col-4"><small>50th: {{ "%.2f"|format(stats.percentiles['50']) }} mm</small></div>
+                            <div class="col-4"><small>75th: {{ "%.2f"|format(stats.percentiles['75']) }} mm</small></div>
+                            <div class="col-4"><small>90th: {{ "%.2f"|format(stats.percentiles['90']) }} mm</small></div>
+                            <div class="col-4"><small>95th: {{ "%.2f"|format(stats.percentiles['95']) }} mm</small></div>
+                            <div class="col-4"><small>99th: {{ "%.2f"|format(stats.percentiles['99']) }} mm</small></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-6">
+                <div class="card results-card">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0">
+                            <i class="fas fa-exclamation-triangle me-2"></i>Severity Classification
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span>Severe (>5mm)</span>
+                                <span class="badge bg-danger severity-badge">{{ "%.1f"|format(stats.severity_percentages.severe) }}%</span>
+                            </div>
+                            <div class="progress mb-3">
+                                <div class="progress-bar bg-danger" style="width: {{ stats.severity_percentages.severe }}%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span>Moderate (2-5mm)</span>
+                                <span class="badge bg-warning severity-badge">{{ "%.1f"|format(stats.severity_percentages.moderate) }}%</span>
+                            </div>
+                            <div class="progress mb-3">
+                                <div class="progress-bar bg-warning" style="width: {{ stats.severity_percentages.moderate }}%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span>Mild (1-2mm)</span>
+                                <span class="badge bg-info severity-badge">{{ "%.1f"|format(stats.severity_percentages.mild) }}%</span>
+                            </div>
+                            <div class="progress mb-3">
+                                <div class="progress-bar bg-info" style="width: {{ stats.severity_percentages.mild }}%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span>Minimal (≤1mm)</span>
+                                <span class="badge bg-success severity-badge">{{ "%.1f"|format(stats.severity_percentages.minimal) }}%</span>
+                            </div>
+                            <div class="progress">
+                                <div class="progress-bar bg-success" style="width: {{ stats.severity_percentages.minimal }}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scan Parameters -->
+        <div class="row g-4 mb-5">
+            <div class="col-12">
+                <div class="card results-card">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-cog me-2"></i>Scan Parameters
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <strong>TE1:</strong> {{ metadata.te1_ms }} ms
+                            </div>
+                            <div class="col-md-3">
+                                <strong>TE2:</strong> {{ metadata.te2_ms }} ms
+                            </div>
+                            <div class="col-md-3">
+                                <strong>ΔTE:</strong> {{ metadata.delta_te_ms }} ms
+                            </div>
+                            <div class="col-md-3">
+                                <strong>Echo Spacing:</strong> {{ metadata.echo_spacing_ms }} ms
+                            </div>
+                            <div class="col-md-4">
+                                <strong>Voxel Size:</strong> {{ "%.2f"|format(metadata.voxel_size_mm.0) }} × {{ "%.2f"|format(metadata.voxel_size_mm.1) }} × {{ "%.1f"|format(metadata.voxel_size_mm.2) }} mm
+                            </div>
+                            <div class="col-md-4">
+                                <strong>Matrix Size:</strong> {{ metadata.data_shape.0 }} × {{ metadata.data_shape.1 }} × {{ metadata.data_shape.2 }}
+                            </div>
+                            <div class="col-md-4">
+                                <strong>Session ID:</strong> {{ session_id }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Clinical Assessment -->
+        <div class="row g-4 mb-5">
+            <div class="col-12">
+                <div class="card results-card">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-stethoscope me-2"></i>Clinical Assessment
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        {% if stats.distortion_max > 3.0 %}
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Warning:</strong> Maximum distortion ({{ "%.2f"|format(stats.distortion_max) }} mm) exceeds typical clinical threshold (3mm). Consider distortion correction for clinical applications.
+                        </div>
+                        {% else %}
+                        <div class="alert alert-success">
+                            <i class="fas fa-check-circle me-2"></i>
+                            <strong>Good:</strong> Maximum distortion ({{ "%.2f"|format(stats.distortion_max) }} mm) is within acceptable clinical range.
+                        </div>
+                        {% endif %}
+                        
+                        {% if stats.distortion_mean > 2.0 %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Note:</strong> Mean distortion ({{ "%.2f"|format(stats.distortion_mean) }} mm) is moderate. Monitor for quantitative measurements.
+                        </div>
+                        {% else %}
+                        <div class="alert alert-success">
+                            <i class="fas fa-check-circle me-2"></i>
+                            <strong>Excellent:</strong> Mean distortion ({{ "%.2f"|format(stats.distortion_mean) }} mm) is low and acceptable for clinical use.
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Download Section -->
+        <div class="row g-4">
+            <div class="col-12">
+                <div class="card results-card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-download me-2"></i>Download Results
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="d-grid">
+                                    <a href="/download/{{ session_id }}/zip" class="btn btn-primary">
+                                        <i class="fas fa-file-archive me-2"></i>Download All Results (ZIP)
+                                    </a>
+                                    <small class="text-muted mt-1">Complete analysis package</small>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <div class="d-grid">
+                                    <a href="/download/{{ session_id }}/fieldmap" class="btn btn-outline-success">
+                                        <i class="fas fa-magnet me-2"></i>Download B0 Field Map
+                                    </a>
+                                    <small class="text-muted mt-1">B0 field map data (.npy)</small>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <div class="d-grid">
+                                    <a href="/download/{{ session_id }}/distortion" class="btn btn-outline-info">
+                                        <i class="fas fa-ruler-combined me-2"></i>Download Distortion Map
+                                    </a>
+                                    <small class="text-muted mt-1">Distortion map in mm (.npy)</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <hr>
+                        
+                        <div class="text-center">
+                            <a href="/" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Analyze Another Dataset
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

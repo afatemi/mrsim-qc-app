@@ -42,7 +42,6 @@ uploads/
 *.dcm
 *.npy
 *.png
-*.html
 *.json
 
 # Keep important files
@@ -50,3 +49,5 @@ uploads/
 !Procfile
 !runtime.txt
 !DEPLOYMENT_GUIDE.md
+!templates/
+!templates/*.html
